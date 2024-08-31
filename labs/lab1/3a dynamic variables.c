@@ -15,3 +15,8 @@ z = (int *) malloc(sizeof(int))
 
 // We want to assign the return pointer to a variable “z” of type int *. 
 // Thus we need to type-cast the “void *” return type of malloc(.) to int *.
+
+
+// When we are done using the memory, we call free. 
+free(z); 
+// Frees memory pointed to by z.
