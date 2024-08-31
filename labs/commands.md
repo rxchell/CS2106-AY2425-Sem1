@@ -14,7 +14,7 @@ srun valgrind ./lab1p3b
 srun valgrind --leak-check=full ./lab1p3c
 ```
 
-Compile `testlist.c` and `llist.c` into an executable called `testlist` and make it ready for analysis by Valgrind
+##### Compile `testlist.c` and `llist.c` into an executable called `testlist` and make it ready for analysis by Valgrind
 ```vim
 gcc -o testlist testlist.c llist.c
 ```
