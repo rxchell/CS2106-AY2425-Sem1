@@ -29,3 +29,6 @@ gcc -o testlist testlist.c llist.c
 - `gcc` is the GNU Compiler Collection, which compiles the C code.
 - `-o testlist` specifies the name of the output executable file, which is testlist.
 - `testlist.c` and `llist.c` are the source files to be compiled and linked.
+```vim
+valgrind ./testlist
+```
