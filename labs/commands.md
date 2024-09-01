@@ -1,9 +1,17 @@
 ### Compile and run files
+#### On slurm
 ```vim
 srun gcc -g lab1p3c.c -o lab1p3c
 ```
 ```vim
 srun ./lab1p3c
+```
+#### On normal Linux machine
+```vim
+gcc -g lab1p3c.c -o lab1p3c
+```
+```vim
+./lab1p3c
 ```
 ### Then run valgrind 
 https://bytes.usc.edu/cs104/wiki/valgrind/#valgrind-cheat-sheet
