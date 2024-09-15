@@ -10,6 +10,7 @@ fi
 program_name=$1
 jobs_dir="jobs"
 summary_report="summary_report.txt"
+log_file="logs.txt"
 
 # Initialize counters for summary report
 total_jobs=0
@@ -24,42 +25,43 @@ total_runtime=0
 for student_dir in "$jobs_dir"/*; do
     # If student directory exists
     if [ -d "$student_dir" ]; then
+    
         # Clear existing log file
-        > "$student_dir/log.txt"
+        > "$student_dir/$log_file"
 
         # Initialise number of errors
         total_errors=0
 
         student_name=$(basename "$student_dir")
-        echo "Processing student job in jobs/$student_name" >> "$student_dir/log.txt"
+        echo "Processing student job in jobs/$student_name" >> "$student_dir/$log_file"
 
         # Compile the C source files
         source_files=("$student_dir"/*.c)
         if [ ${#source_files[@]} -eq 0 ]; then
-            echo "No C source files found for $student_name" >> "$student_dir/log.txt"
+            echo "No C source files found for $student_name" >> "$student_dir/$log_file"
             continue
         fi
 
         total_jobs=$((total_jobs + 1))
 
-        echo "Compiling ${source_files[*]}" >> "$student_dir/log.txt"
-        gcc "${source_files[@]}" -o "$student_dir/$program_name" 2>> "$student_dir/log.txt"
+        echo "Compiling ${source_files[*]}" >> "$student_dir/$log_file"
+        gcc "${source_files[@]}" -o "$student_dir/$program_name" 2>> "$student_dir/$log_file"
 
         if [ $? -ne 0 ]; then
             total_errors=$((total_errors + 1))
-            echo "$total_errors error generated." >> "$student_dir/log.txt"
-            echo "Compilation failed for jobs/$student_name" >> "$student_dir/log.txt"
+            echo "$total_errors error generated." >> "$student_dir/$log_file"
+            echo "Compilation failed for jobs/$student_name" >> "$student_dir/$log_file"
             failed_compilations=$((failed_compilations + 1))
             continue
         else
-            echo "Compilation successful for jobs/$student_name" >> "$student_dir/log.txt"
+            echo "Compilation successful for jobs/$student_name" >> "$student_dir/$log_file"
             successful_compilations=$((successful_compilations + 1))
         fi
 
         # Process each input file
         input_files=("$student_dir"/*.in)
         if [ ${#input_files[@]} -eq 0 ]; then
-            echo "No input files found for $student_name" >> "$student_dir/log.txt"
+            echo "No input files found for $student_name" >> "$student_dir/$log_file"
         fi
 
         for input_file in "${input_files[@]}"; do
@@ -67,16 +69,16 @@ for student_dir in "$jobs_dir"/*; do
             start_time=$(date +%s.%N)
 
             # Run the compiled program
-            ./"$student_dir/$program_name" < "$input_file" > "$output_file" 2>> "$student_dir/log.txt"
+            ./"$student_dir/$program_name" < "$input_file" > "$output_file" 2>> "$student_dir/$log_file"
 
             end_time=$(date +%s.%N)
             elapsed_time=$(echo "$end_time - $start_time" | bc)
 
-            echo "Execution time for $input_file: $elapsed_time seconds" >> "$student_dir/log.txt"
+            echo "Execution time for $input_file: $elapsed_time seconds" >> "$student_dir/$log_file"
 
             # Check for runtime errors
             if [ $? -ne 0 ]; then
-                echo "Runtime error encountered while processing $input_file" >> "$student_dir/log.txt"
+                echo "Runtime error encountered while processing $input_file" >> "$student_dir/$log_file"
             fi
 
             total_runtime=$(echo "$total_runtime + $elapsed_time" | bc)
