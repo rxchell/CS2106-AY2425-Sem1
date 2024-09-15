@@ -24,6 +24,12 @@ total_runtime=0
 for student_dir in "$jobs_dir"/*; do
     # If student directory exists
     if [ -d "$student_dir" ]; then
+        # Clear existing log file
+        > "$student_dir/log.txt"
+
+        # Initialise number of errors
+        total_errors=0
+
         student_name=$(basename "$student_dir")
         echo "Processing student job in jobs/$student_name" >> "$student_dir/log.txt"
 
@@ -40,7 +46,9 @@ for student_dir in "$jobs_dir"/*; do
         gcc "${source_files[@]}" -o "$student_dir/$program_name" 2>> "$student_dir/log.txt"
 
         if [ $? -ne 0 ]; then
-            echo "Compilation failure for jobs/$student_name" >> "$student_dir/log.txt"
+            total_errors=$((total_errors + 1))
+            echo "$total_errors error generated." >> "$student_dir/log.txt"
+            echo "Compilation failed for jobs/$student_name" >> "$student_dir/log.txt"
             failed_compilations=$((failed_compilations + 1))
             continue
         else
@@ -85,4 +93,4 @@ echo "Successful compilations: $successful_compilations" >> "$summary_report"
 echo "Failed compilations: $failed_compilations" >> "$summary_report"
 echo "Total runtime of all jobs: $total_runtime seconds" >> "$summary_report"
 
-echo "Summary report generated at $summary_report"             
+echo "Summary report generated at $summary_report" 
