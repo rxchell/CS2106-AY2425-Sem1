@@ -1,90 +1,36 @@
-Last login: Sun Sep 15 08:59:45 on ttys000
-rachel@Rachels-MacBook-Air ~ % ssh rachelt@xlog.comp.nus.edu.sg 
+#!/bin/bash
 
-rachelt@xlog.comp.nus.edu.sg's password: 
-======================( Welcome to SoC Compute Cluster! )=====================
-Documentation is at https://dochub.comp.nus.edu.sg/cf/guides/compute-cluster/.
-______________________________________________________________________________
+# Check if exactly one argument is supplied
+if [ "$#" -ne 1 ]; then
+    # Echo this message if not exactly one argument is supplied
+    echo "Usage: ./process_jobs.sh <filename>"
+    exit 1
+fi
 
-** Current Cluster allocation: CPU=5.5%, Memory=6.6%, GPU=23.7%
-** [AH]100-specific: A100-40=46.7%, A100-80=70.0%, H100-47=3.3%, H100-96=55.0%
+program_name=$1
+jobs_dir="jobs"
+summary_report="summary_report.txt"
 
-Last login: Sat Sep 14 17:07:02 2024 from 192.168.152.188
-rachelt@xlogin1:~$ cd L02/part1/batch
-rachelt@xlogin1:~/L02/part1/batch$ ./process_jobs.sh run
-Summary report generated at summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ cd jobs
-rachelt@xlogin1:~/L02/part1/batch/jobs$ ls
-A0183741Y  A0281754H  A0285757B  log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ ls log.txt
-log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ vim log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ cd jobs
--bash: cd: jobs: No such file or directory
-rachelt@xlogin1:~/L02/part1/batch/jobs$ ls
-A0183741Y  A0281754H  A0285757B  log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ cd A0183741Y
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ ls
-log.txt  run  s1.in  s1.in.out	sum.c  utils.c	utils.h
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ vim log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ cd ~../..
--bash: cd: ~../..: No such file or directory
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ cd ../..
-rachelt@xlogin1:~/L02/part1/batch$ ls
-jobs  process_jobs.sh  summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim process_jobs.sh
+# Initialize counters for summary report
+total_jobs=0
+successful_compilations=0
+failed_compilations=0
+total_runtime=0
 
+# Clear previous summary report if it exists
+> "$summary_report"
 
+# Iterate over each student directory in the jobs/ directory
+for student_dir in "$jobs_dir"/*; do
+    # If student directory exists
+    if [ -d "$student_dir" ]; then
+        student_name=$(basename "$student_dir")
+        echo "Processing student job in jobs/$student_name" >> "$student_dir/log.txt"
 
-
-
-
-
-rachelt@xlogin1:~/L02/part1/batch$ ./process_jobs.sh run
-Summary Report
-Summary report generated at summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim process_jobs.sh
-rachelt@xlogin1:~/L02/part1/batch$ ./process_jobs.sh run
-Summary report generated at summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ cd jobs
-rachelt@xlogin1:~/L02/part1/batch/jobs$ ls
-A0183741Y  A0281754H  A0285757B  log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ cd A0183741Y
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ ls
-log.txt  run  s1.in  s1.in.out	sum.c  utils.c	utils.h
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ vim log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ cd ../..
-rachelt@xlogin1:~/L02/part1/batch$ ls
-jobs  process_jobs.sh  summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim process_jobs.sh
-rachelt@xlogin1:~/L02/part1/batch$ vim process_jobs.sh
-rachelt@xlogin1:~/L02/part1/batch$ ./process_jobs.sh run
-Summary report generated at summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim summary.report.txt
-rachelt@xlogin1:~/L02/part1/batch$ ls
-1  jobs  process_jobs.sh  summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ rm 1
-ls
-rachelt@xlogin1:~/L02/part1/batch$ ls
-jobs  process_jobs.sh  summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ cd jobs
-rachelt@xlogin1:~/L02/part1/batch/jobs$ ls
-A0183741Y  A0281754H  A0285757B  log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs$ cd A0183741Y
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ ls
-log.txt  run  s1.in  s1.in.out	sum.c  utils.c	utils.h
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ vim log.txt
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ ../..
--bash: ../..: Is a directory
-rachelt@xlogin1:~/L02/part1/batch/jobs/A0183741Y$ cd ../..
-rachelt@xlogin1:~/L02/part1/batch$ ls
-jobs  process_jobs.sh  summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim summary_report.txt
-rachelt@xlogin1:~/L02/part1/batch$ vim process_jobs.sh
-
+        # Compile the C source files
+        source_files=("$student_dir"/*.c)
+        if [ ${#source_files[@]} -eq 0 ]; then
+            echo "No C source files found for $student_name" >> "$student_dir/log.txt"
             continue
         fi
 
@@ -139,4 +85,4 @@ echo "Successful compilations: $successful_compilations" >> "$summary_report"
 echo "Failed compilations: $failed_compilations" >> "$summary_report"
 echo "Total runtime of all jobs: $total_runtime seconds" >> "$summary_report"
 
-echo "Summary report generated at $summary_report"
+echo "Summary report generated at $summary_report"             
