@@ -33,20 +33,26 @@ void init_barrier(int numproc) {
                             // allowing access for the first process that reaches it
 
 void reach_barrier() {
-  sem_wait(_mutex);
-  _count[0]++;
-  sem_post(_mutex);;
+  sem_wait(_mutex);       // lock mutex before modifying shared counter 
+                          // ensures that no two processes can increment the counter simultaneously, preventing race conditions.
+  
+  _count[0]++;            // increment counter to show that anpther process has reached barrier
+  
+  sem_post(_mutex);;      // unlock mutex, allow other processes to access counter
 
-  if(_count[0] >= _nproc) {
+  if(_count[0] >= _nproc) {  // checks if the current count >= total number of processes 
+    // yes, so last process has reached barrier 
     // Release the barrier
     sem_post(_barrier);
+    // allow all waiting processes to proceed 
   }
   else
   {
     // Wait at the barrier
-    sem_wait(_barrier);
+    sem_wait(_barrier); // blocks until barrier is released 
 
-    // Once we wake, we wake our neighbor
+    // Once a process wakes from the barrier (indicating that it can proceed), 
+    // it signals the next waiting process at the barrier using sem_post(barrier)
     sem_post(_barrier);
   }
 }
