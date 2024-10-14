@@ -12,19 +12,25 @@ int *_count;    // Shared counter to track how many processes have reached the b
 void init_barrier(int numproc) {
   _nproc = numproc;
 
-  _shmid = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600);
-  _shmid2 = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
 
+  // create shared memory using shmget
+  _shmid = shmget(IPC_PRIVATE, 2 * sizeof(sem_t), IPC_CREAT | 0600); 
+  // shared memory segment to hold 2 semaphores (2 * sizeof(sem_t)) 
+  _shmid2 = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);
+  // shared memory segment to hold an integer for counting number of processes that have reached the barrier
+
+  // attach shared memory segments using shmat
   _sems = (sem_t*) shmat(_shmid, NULL, 0);
   _count = (int*) shmat(_shmid2, NULL, 0);
-  _count[0] = 0;
 
-  _barrier = &_sems[0];
-  _mutex = &_sems[1];
+  _count[0] = 0;           // initialise counter to 0
 
-  sem_init(_barrier, 1, 0);
-  sem_init(_mutex, 1, 1);
-}
+  _barrier = &_sems[0];    // first semaphore assigned to _barrier semaphore
+  _mutex = &_sems[1];      // second semaphore assigned to _mutex semaphore
+
+  sem_init(_barrier, 1, 0); // barrier semaphore is initialized to 0 (locked state). 
+  sem_init(_mutex, 1, 1);   // mutex semaphore is initialized to 1 (unlocked state) 
+                            // allowing access for the first process that reaches it
 
 void reach_barrier() {
   sem_wait(_mutex);
